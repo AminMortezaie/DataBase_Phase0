@@ -11,11 +11,11 @@ class MyFrame(wx.Frame):
             answer = box.GetValue()
             if "add book " in answer:
                 answer = answer[9:]
-                self.addBook(answer)
+                self.addBookPub(answer, True)
 
             elif "find book " in answer:
                 answer = answer[10:]
-                kind = self.kindRec(answer)
+                kind = self.kindRecBook(answer)
                 name = self.removeRedd(kind, answer)
                 print(self.findBook(name, kind))
 
@@ -28,31 +28,71 @@ class MyFrame(wx.Frame):
                 answer = answer[12:]
                 self.updateBook(self.findISBN(answer), self.findUpdate(answer))
 
+            # must be attention to one space and keep the notation that have been held in doc.
+            elif "add publisher " in answer:
+                answer = answer[14:]
+                self.addBookPub(answer, False)
+
+            elif "remove publisher " in answer:
+                answer = answer[17:].replace(" ","")
+                self.removePublisher(answer)
+
+            elif "update publisher " in answer:
+                answer = answer[17:]
+                self.updatePubisher(answer)
+
+            elif "find publisher " in answer:
+                answer = answer[15:]
+                print(self.findPublisher(answer))
+
         box.Destroy()
         app.Destroy()
 
+    # find publisher by part of its name.
+    def findPublisher(self, answer):
+        value = answer.split("by")[0].replace(" ", "")
+        try:
+            with open("Publisher.txt", "r") as fp:
+                flag = True
+                while flag:
+                    line = fp.readline()
+                    name = line.split(",")[1].split(":")[1].replace(" ", "")
+                    if value in name:
+                        flag = False
+                        return line.strip()
+        except:
+            return "Not found in database!"
+
     # add book by using string as input.
-    def addBook(self, answer):
+    def addBookPub(self, answer, flag):
         answer = answer.split(", ")
         print(answer)
         book = ","
         book = book.join(answer)
-        file = open("database.txt", "a")
+        if flag:
+            file = open("books.txt", "a")
+        else:
+            file = open("Publisher.txt", "a")
         file.write(book + "\n")
         file.close()
 
     # add book to database by input array to it.
-    def addBookArray(self, array):
+    # if flag is true add to books and else adds to publisher
+    def addBookArray(self, array, flag):
         book = ","
         book = book.join(array)
-        file = open("database.txt", "a")
+        if flag:
+            file = open("books.txt", "a")
+        else:
+            file = open("Publisher.txt", "a")
         file.write(book + "\n")
         file.close()
-
+        return True
+    # main function to find books.
     def findBook(self, name, kind):
         value = kind + ":" + name
         print(value)
-        with open("database.txt", "r") as fp:
+        with open("books.txt", "r") as fp:
             flag = True
             while flag:
                 line = fp.readline()
@@ -64,9 +104,9 @@ class MyFrame(wx.Frame):
     def removeBook(self, ISBN):
         book = self.findBook(ISBN, "ISBN")
         print(book)
-        s = open("database.txt").read()
+        s = open("books.txt").read()
         s = s.replace(book, "")
-        f = open("database.txt", 'w')
+        f = open("books.txt", 'w')
         f.write(s)
         f.close()
 
@@ -87,10 +127,10 @@ class MyFrame(wx.Frame):
         book[flag] = value.replace(" ", "")
         print("newBook:", book)
         self.removeBook(ISBN)
-        self.addBookArray(book)
+        self.addBookArray(book, True)
 
     # find the Kind of book specific using in main find book function.
-    def kindRec(self, answer):
+    def kindRecBook(self, answer):
         if "BookName" in answer:
             return "BookName"
         elif "ISBN" in answer:
@@ -115,9 +155,52 @@ class MyFrame(wx.Frame):
         (kind, name) = answer.split("to")
         return kind + ":" + name
 
+    # main function to update publisher info.
+    def updatePubisher(self, answer):
+        pubId = answer.split("set")[0]
+        kind = answer.split("set")[1].split("to")[0]
+        old = answer.split("set")[1].split("to")[1]
+        newValue = (kind + ":" + old).replace(" ", "")
+        value = "PubId" + ":" + pubId
+        myLine = ""
+        counter = 0
+        flag1 = True
+        with open("Publisher.txt", "r") as fp:
+            flag = True
+            while flag:
+                line = fp.readline()
+                if value in line:
+                    flag = False
+                    myLine = line.strip()
+        myLine = myLine.split(",")
+
+        while flag1:
+            if kind.replace(" ", "") == myLine[counter].split(":")[0].replace(" ", ""):
+                myLine[counter] = newValue
+                flag1 = False
+                print(myLine[counter])
+            counter += 1
+        self.removePublisher(pubId)
+        if self.addBookArray(myLine,False):
+            print("Updated Successfully!")
+
+    def removePublisher(self, pubId):
+        value = "PubId:" + pubId
+        with open("Publisher.txt", "r+") as fp:
+            flag = True
+            while flag:
+                line = fp.readline()
+                if value in line:
+                    flag = False
+                    myLine = line.strip()
+
+            s = open("Publisher.txt").read()
+            s = s.replace(myLine, "")
+            f = open("Publisher.txt", 'w')
+            f.write(s)
+            f.close()
 
 
 
 app = wx.App(False)
 MyFrame(None)
-app.MainLoop()
