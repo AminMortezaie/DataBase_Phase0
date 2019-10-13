@@ -2,8 +2,13 @@ import wx
 
 
 class MyFrame(wx.Frame):
+    bookRecord = 1
+    publisherRecord = 1
 
     def __init__(self, parent):
+        self.recordFinder(True)
+        self.recordFinder(False)
+
         wx.Frame.__init__(self, parent)
         box = wx.TextEntryDialog(None, "What do you want to do?")
         answer = "nothing!"
@@ -26,7 +31,7 @@ class MyFrame(wx.Frame):
 
             elif "update book " in answer:
                 answer = answer[12:]
-                self.updateBook(self.findISBN(answer), self.findUpdate(answer))
+                print(self.updateBook(self.findISBN(answer), self.findUpdate(answer)))
 
             # must be attention to one space and keep the notation that have been held in doc.
             elif "add publisher " in answer:
@@ -34,12 +39,12 @@ class MyFrame(wx.Frame):
                 self.addBookPub(answer, False)
 
             elif "remove publisher " in answer:
-                answer = answer[17:].replace(" ","")
+                answer = answer[17:].replace(" ", "")
                 self.removePublisher(answer)
 
             elif "update publisher " in answer:
                 answer = answer[17:]
-                self.updatePubisher(answer)
+                self.updatePublisher(answer)
 
             elif "find publisher " in answer:
                 answer = answer[15:]
@@ -65,29 +70,38 @@ class MyFrame(wx.Frame):
 
     # add book by using string as input.
     def addBookPub(self, answer, flag):
-        answer = answer.split(", ")
+        answer = answer.split(",")
         print(answer)
-        book = ","
+        book = "/"
         book = book.join(answer)
         if flag:
             file = open("books.txt", "a")
+            file.write(str(self.bookRecord) + "-" + book + "\n")
+            self.bookRecord += 1
         else:
             file = open("Publisher.txt", "a")
-        file.write(book + "\n")
+            file.write(str(self.publisherRecord) + "-" + book + "\n")
+            self.publisherRecord += 1
+
         file.close()
 
     # add book to database by input array to it.
     # if flag is true add to books and else adds to publisher
     def addBookArray(self, array, flag):
-        book = ","
+        book = "/"
         book = book.join(array)
         if flag:
             file = open("books.txt", "a")
+            file.write(str(self.bookRecord) + "-" + book + "\n")
+            self.bookRecord += 1
         else:
             file = open("Publisher.txt", "a")
-        file.write(book + "\n")
+            file.write(str(self.publisherRecord) + "-" + book + "\n")
+            self.publisherRecord += 1
+
         file.close()
         return True
+
     # main function to find books.
     def findBook(self, name, kind):
         value = kind + ":" + name
@@ -114,8 +128,9 @@ class MyFrame(wx.Frame):
     def updateBook(self, ISBN, value):
         counter = 0
         flag = -1
-        book = self.findBook(ISBN, "ISBN")
-        book = book.split(",")
+        book = self.findBook(ISBN, "ISBN").split("-")[1]
+        book = book.split("/")
+        print(book)
         kind = value.split(":")[0]
         for bookSpec in book:
             # remove redundant spaces from kind and book by replace function.
@@ -128,6 +143,7 @@ class MyFrame(wx.Frame):
         print("newBook:", book)
         self.removeBook(ISBN)
         self.addBookArray(book, True)
+        return "Updated Successfully!"
 
     # find the Kind of book specific using in main find book function.
     def kindRecBook(self, answer):
@@ -156,10 +172,13 @@ class MyFrame(wx.Frame):
         return kind + ":" + name
 
     # main function to update publisher info.
-    def updatePubisher(self, answer):
+    def updatePublisher(self, answer):
         pubId = answer.split("set")[0]
+        print(pubId)
         kind = answer.split("set")[1].split("to")[0]
+        print(kind)
         old = answer.split("set")[1].split("to")[1]
+        print(old)
         newValue = (kind + ":" + old).replace(" ", "")
         value = "PubId" + ":" + pubId
         myLine = ""
@@ -172,16 +191,17 @@ class MyFrame(wx.Frame):
                 if value in line:
                     flag = False
                     myLine = line.strip()
-        myLine = myLine.split(",")
-
+        myLine = myLine.split("-")[1].split("/")
         while flag1:
             if kind.replace(" ", "") == myLine[counter].split(":")[0].replace(" ", ""):
                 myLine[counter] = newValue
                 flag1 = False
                 print(myLine[counter])
             counter += 1
+        print(myLine)
         self.removePublisher(pubId)
-        if self.addBookArray(myLine,False):
+
+        if self.addBookArray(myLine, False):
             print("Updated Successfully!")
 
     def removePublisher(self, pubId):
@@ -200,6 +220,33 @@ class MyFrame(wx.Frame):
             f.write(s)
             f.close()
 
+    def recordFinder(self, flag):
+        if flag:
+            fileHandle = open('books.txt', "r")
+            lineList = fileHandle.readlines()
+            for i in lineList:
+                if i == "\n":
+                    self.bookRecord = 1
+                    return
+            if len(lineList) == 0:
+                self.bookRecord = 1
+            else:
+                self.bookRecord = int(lineList[len(lineList) - 1].split("-")[0]) + 1
+
+        else:
+            fileHandle = open('Publisher.txt', "r")
+            lineList = fileHandle.readlines()
+            for i in lineList:
+                if i == "\n":
+                    self.publisherRecord = 1
+                    return
+            if len(lineList) == 0:
+                self.publisherRecord = 1
+
+            else:
+                self.publisherRecord = int(lineList[len(lineList) - 1].split("-")[0]) + 1
+
+        fileHandle.close()
 
 
 app = wx.App(False)

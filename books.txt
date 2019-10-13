@@ -1,1 +1,7 @@
-ISBN:10 ,BookName:Computer Graphics ,Authors:Hearn ,Publisher:A ,Subjects:CAD ,PublishedYear:2002 ,PageNo:150
+ 
+2-ISBN:1990 / BookName:Computer Graphics / Authors:Hearn / Publisher:A / Subjects:CAD / PublishedYear:2002 / PageNo:1500 
+ 
+4-ISBN:1890 / BookName:Computer Graphics / Authors:Hearn / Publisher:A / Subjects:CAD / PublishedYear:2002 / PageNo:1500 
+5-ISBN:130 / BookName:Computer Graphics / Authors:Hearn / Publisher:A / Subjects:CAD / PublishedYear:2002 / PageNo:1500 
+
+7-ISBN:10 /BookName:aliagha/ Authors:Hearn / Publisher:A / Subjects:CAD / PublishedYear:2002 / PageNo:1500
