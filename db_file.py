@@ -16,7 +16,10 @@ class MyFrame(wx.Frame):
             answer = box.GetValue()
             if "add book " in answer:
                 answer = answer[9:]
-                self.addBookPub(answer, True)
+                if self.parser(answer, True):
+                    self.addBookPub(answer, True)
+                else:
+                    print("your input is not correct!")
 
             elif "find book " in answer:
                 answer = answer[10:]
@@ -36,7 +39,10 @@ class MyFrame(wx.Frame):
             # must be attention to one space and keep the notation that have been held in doc.
             elif "add publisher " in answer:
                 answer = answer[14:]
-                self.addBookPub(answer, False)
+                if self.parser(answer, False):
+                    self.addBookPub(answer, False)
+                else:
+                    print("your input is not correct!")
 
             elif "remove publisher " in answer:
                 answer = answer[17:].replace(" ", "")
@@ -247,6 +253,63 @@ class MyFrame(wx.Frame):
                 self.publisherRecord = int(lineList[len(lineList) - 1].split("-")[0]) + 1
 
         fileHandle.close()
+
+    # limitation for book infos.
+    def checkDomainBook(self, kind, value):
+        if kind == "ISBN":
+            if len(value) == 20:
+                return True
+        if kind == "BookName":
+            if len(value) < 201:
+                return True
+        if kind == "Authors":
+            if len(value) < 201:
+                return True
+        if kind == "Publisher":
+            if len(value) < 201:
+                return True
+        if kind == "Subjects":
+            if len(value) < 100:
+                return True
+        if kind == "PublishedYear":
+            if len(value) == 4:
+                return True
+        if kind == "PageNo":
+            if len(value) < 5:
+                return True
+
+    # limitation for publisher infos.
+    def checkDomainPublisher(self, kind, value):
+        if kind == "PubId":
+            if len(value) == 6:
+                return True
+        if kind == "PubName":
+            if len(value) < 201:
+                return True
+        if kind == "SubjectsInterest":
+            if len(value) < 201:
+                return True
+        if kind == "HeadName":
+            if len(value) < 101:
+                return True
+        if kind == "PubAddress":
+            if len(value) < 201:
+                return True
+
+    # make info parse and checks.
+    # flag for set book or publisher.
+    def parser(self, answer, flag):
+        answer = answer.split(",")
+        for ins in answer:
+            kind = ins.split(":")[0].replace(" ", "")
+            value = ins.split(":")[1].replace(" ", "")
+            if flag:
+                if not self.checkDomainBook(kind, value):
+                    return False
+            if not flag:
+                if not self.checkDomainPublisher(kind, value):
+                    return False
+        return True
 
 
 app = wx.App(False)
